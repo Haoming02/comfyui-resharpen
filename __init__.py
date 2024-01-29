@@ -1,11 +1,9 @@
-from .resharpen import HookCallback, UnhookCallback
+from .resharpen import ReSharpen
 
 NODE_CLASS_MAPPINGS = {
-	"HookResharpen": HookCallback,
-	"UnhookResharpen": UnhookCallback,
+	"Resharpen": ReSharpen
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-	"HookResharpen": "Hook ReSharpen",
-	"UnhookResharpen": "Unhook ReSharpen",
+	"Resharpen": "ReSharpen"
 }

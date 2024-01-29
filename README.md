@@ -3,24 +3,20 @@ This is an Extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI), w
 
 > **ie.** This is not just a postprocessing filter
 
-## Nodes
-- **Hook ReSharpen:** Hooks the callback to enable the effects. Comes with a **details** slider:
+## How to Use
+- Attach the **ReSharpen** node between `Empty Latent` and `KSampler` nodes
+- Adjust the **details** slider:
     - **Positive** values cause the images to be noisy
     - **Negative** values cause the images to be blurry
 
-> Though, don't actually use values too close 1 or -1 as it will become distorted
+> Don't use values too close to `1` or `-1`, as it will become distorted
 
-- **Unhook ReSharpen** (Optional)**:** Unhook the callback to disable the effects.
-    - If used, put near the end of the workflow
-
-#### Important:
+### Important:
 - `Ancestral` samplers *(**eg.** `Euler a`)* do **not** work.
-- In a single workflow, you only need to hook the callback once. The simplest way is to add it between the `Positive Prompt` and the `Sampler`.
-- Due to how `ComfyUI` works, if you also add **Unhook ReSharpen**, the effect may not work sometimes unless you also change the prompt.
+- The **enable** is "global." If you want to disable it during later part of the workflow *(**eg.** during `Hires. Fix`)*, 
+you have to add another **ReSharpen** node and set it to disable.
 
-> ComfyUI doesn't go through a node unless it needs to be updated, so if you unhook the callback and the parameters didn't change *(**eg.** you're only iterating throguh seeds)*, then the callback will not be hooked again. Easiest way to solve this is just adding a space to the positive prompt, or just don't unhook the callback.
-
-## Samples
+## Examples
 
 <table>
     <thead align="center">
