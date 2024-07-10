@@ -1,5 +1,5 @@
 ﻿# ComfyUI ReSharpen
-This is an Extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI), which allows you to increase or decrease the amount of details of the generation during the Stable Diffusion pipeline.
+This is an Extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI), which allows you to increase or decrease the amount of details generated during the Stable Diffusion pipeline.
 
 > **ie.** This is not just a postprocessing filter
 
@@ -13,8 +13,7 @@ This is an Extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI), w
 
 ### Important:
 - `Ancestral` samplers *(**eg.** `Euler a`)* do **not** work.
-- The **enable** is "global." If you want to disable it during later part of the workflow *(**eg.** during `Hires. Fix`)*, 
-you have to add another **ReSharpen** node and set it to disable.
+- The **enable** is "global." If you want to disable it during later part of the workflow *(**eg.** during `Hires. Fix`)*, you have to add another **ReSharpen** node and set it to disable.
 
 ## Examples
 

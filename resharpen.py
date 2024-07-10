@@ -7,14 +7,20 @@ strength = 0.0
 ORIGINAL_SAMPLE = comfy.sample.sample
 ORIGINAL_SAMPLE_CUSTOM = comfy.sample.sample_custom
 
+
+def disable():
+    global isEnabled
+    isEnabled = False
+
+
 def hijack(SAMPLE):
 
     def sample_center(*args, **kwargs):
-        original_callback = kwargs['callback']
+        original_callback = kwargs["callback"]
 
         def hijack_callback(step, x0, x, total_steps):
-            global traj_cache
             global isEnabled
+            global traj_cache
             global strength
 
             if not isEnabled:
@@ -27,10 +33,11 @@ def hijack(SAMPLE):
             traj_cache = x.detach().clone()
             return original_callback(step, x0, x, total_steps)
 
-        kwargs['callback'] = hijack_callback
+        kwargs["callback"] = hijack_callback
         return SAMPLE(*args, **kwargs)
 
     return sample_center
+
 
 comfy.sample.sample = hijack(ORIGINAL_SAMPLE)
 comfy.sample.sample_custom = hijack(ORIGINAL_SAMPLE_CUSTOM)
@@ -43,7 +50,10 @@ class ReSharpen:
             "required": {
                 "latent": ("LATENT",),
                 "enable": ("BOOLEAN", {"default": False}),
-                "details": ("FLOAT", {"default": 0.0, "min": -1.0, "max": 1.0, "step": 0.1})
+                "details": (
+                    "FLOAT",
+                    {"default": 0.0, "min": -1.0, "max": 1.0, "step": 0.1},
+                ),
             }
         }
 
@@ -52,10 +62,13 @@ class ReSharpen:
     CATEGORY = "latent"
 
     def hook(self, latent, enable, details):
-        global traj_cache
-        traj_cache = None
         global isEnabled
         isEnabled = enable
-        global strength
-        strength = details / -10.0
+
+        if isEnabled:
+            global traj_cache
+            traj_cache = None
+            global strength
+            strength = details / -10.0
+
         return (latent,)
