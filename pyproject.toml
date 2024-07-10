@@ -1,0 +1,13 @@
+[project]
+name = "comfyui-resharpen"
+description = "Manipulate the details of generations"
+version = "1.0.0"
+license = "MIT"
+
+[project.urls]
+Repository = "https://github.com/Haoming02/comfyui-resharpen"
+
+[tool.comfy]
+PublisherId = "haoming02"
+DisplayName = "ReSharpen"
+Icon = ""
