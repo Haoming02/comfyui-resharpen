@@ -7,7 +7,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {"Resharpen": "ReSharpen"}
 
 
 def find_node(prompt: dict) -> bool:
-    """Find any ReCenter Node"""
+    """Find any ReSharpen Node"""
 
     for k, v in prompt.items():
         if v["class_type"] == "Resharpen":
