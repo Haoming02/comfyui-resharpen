@@ -1,46 +1,51 @@
-import comfy
-
-isEnabled = False
-traj_cache = None
-strength = 0.0
-
-ORIGINAL_SAMPLE = comfy.sample.sample
-ORIGINAL_SAMPLE_CUSTOM = comfy.sample.sample_custom
+from functools import wraps
+from typing import Callable
+import latent_preview
+import torch
 
 
-def disable():
-    global isEnabled
-    isEnabled = False
+ORIGINAL_PREP: Callable = latent_preview.prepare_callback
+
+RESHARPEN_STRENGTH: float = 0.0
+LATENT_CACHE: torch.Tensor = None
 
 
-def hijack(SAMPLE):
+def disable_resharpen():
+    """Reset the ReSharpen Strength"""
+    global RESHARPEN_STRENGTH
+    RESHARPEN_STRENGTH = 0.0
 
-    def sample_center(*args, **kwargs):
-        original_callback = kwargs["callback"]
 
+def hijack(PREP) -> Callable:
+
+    @wraps(PREP)
+    def prep_callback(*args, **kwargs):
+        original_callback: Callable = PREP(*args, **kwargs)
+        if not RESHARPEN_STRENGTH:
+            return original_callback
+
+        print("[ReSharpen] Enabled~")
+
+        @torch.inference_mode()
+        @wraps(original_callback)
         def hijack_callback(step, x0, x, total_steps):
-            global isEnabled
-            global traj_cache
-            global strength
-
-            if not isEnabled:
+            if not RESHARPEN_STRENGTH:
                 return original_callback(step, x0, x, total_steps)
 
-            if traj_cache is not None:
-                delta = x.detach().clone() - traj_cache
-                x += delta * strength
+            global LATENT_CACHE
+            if LATENT_CACHE is not None:
+                delta = x.detach().clone() - LATENT_CACHE
+                x += delta * RESHARPEN_STRENGTH
 
-            traj_cache = x.detach().clone()
+            LATENT_CACHE = x.detach().clone()
             return original_callback(step, x0, x, total_steps)
 
-        kwargs["callback"] = hijack_callback
-        return SAMPLE(*args, **kwargs)
+        return hijack_callback
 
-    return sample_center
+    return prep_callback
 
 
-comfy.sample.sample = hijack(ORIGINAL_SAMPLE)
-comfy.sample.sample_custom = hijack(ORIGINAL_SAMPLE_CUSTOM)
+latent_preview.prepare_callback = hijack(ORIGINAL_PREP)
 
 
 class ReSharpen:
@@ -49,10 +54,9 @@ class ReSharpen:
         return {
             "required": {
                 "latent": ("LATENT",),
-                "enable": ("BOOLEAN", {"default": False}),
                 "details": (
                     "FLOAT",
-                    {"default": 0.0, "min": -1.0, "max": 1.0, "step": 0.1},
+                    {"default": 0.0, "min": -2.0, "max": 2.0, "step": 0.1},
                 ),
             }
         }
@@ -61,14 +65,12 @@ class ReSharpen:
     FUNCTION = "hook"
     CATEGORY = "latent"
 
-    def hook(self, latent, enable, details):
-        global isEnabled
-        isEnabled = enable
+    def hook(self, latent, details: float):
 
-        if isEnabled:
-            global traj_cache
-            traj_cache = None
-            global strength
-            strength = details / -10.0
+        global RESHARPEN_STRENGTH
+        RESHARPEN_STRENGTH = details / -10.0
+
+        global LATENT_CACHE
+        LATENT_CACHE = None
 
         return (latent,)

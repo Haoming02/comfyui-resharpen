@@ -4,16 +4,16 @@ This is an Extension for [ComfyUI](https://github.com/comfyanonymous/ComfyUI), w
 > **ie.** This is not just a postprocessing filter
 
 ## How to Use
-- Attach the **ReSharpen** node between `Empty Latent` and `KSampler` nodes
+- Attach the **ReSharpen** node between `Empty Latent` and your `Sampler` node of choice
 - Adjust the **details** slider:
     - **Positive** values cause the images to be noisy
     - **Negative** values cause the images to be blurry
 
-> Don't use values too close to `1` or `-1`, as it will become distorted
+> Values too large or small may cause the result to become distorted!
 
 ### Important:
 - `Ancestral` samplers *(**eg.** `Euler a`)* do **not** work.
-- The **enable** is "global." If you want to disable it during later part of the workflow *(**eg.** during `Hires. Fix`)*, you have to add another **ReSharpen** node and set it to disable.
+- The effect is "global," meaning if you want to disable it during other parts of the workflow *(**eg.** during `Hires. Fix`)*, you need to add another **ReSharpen** node and set the `details` to `0` again.
 
 ## Examples
 

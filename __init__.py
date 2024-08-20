@@ -1,28 +1,26 @@
-from .resharpen import ReSharpen, disable
+from .resharpen import ReSharpen, disable_resharpen
+from functools import wraps
+from typing import Callable
 import execution
 
 NODE_CLASS_MAPPINGS = {"Resharpen": ReSharpen}
-
 NODE_DISPLAY_NAME_MAPPINGS = {"Resharpen": "ReSharpen"}
 
 
 def find_node(prompt: dict) -> bool:
     """Find any ReSharpen Node"""
 
-    for k, v in prompt.items():
-        if v["class_type"] == "Resharpen":
-            return True
-
-    return False
+    return any(v.get("class_type") == "Resharpen" for v in prompt.values())
 
 
-original_validate = execution.validate_prompt
+original_validate: Callable = execution.validate_prompt
 
 
-def hijack_validate(prompt):
+@wraps(original_validate)
+def hijack_validate(prompt: dict) -> Callable:
 
     if not find_node(prompt):
-        disable()
+        disable_resharpen()
 
     return original_validate(prompt)
 
