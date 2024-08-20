@@ -20,6 +20,9 @@ def hijack(PREP) -> Callable:
 
     @wraps(PREP)
     def prep_callback(*args, **kwargs):
+        global LATENT_CACHE
+        LATENT_CACHE = None
+
         original_callback: Callable = PREP(*args, **kwargs)
         if not RESHARPEN_STRENGTH:
             return original_callback
@@ -69,8 +72,5 @@ class ReSharpen:
 
         global RESHARPEN_STRENGTH
         RESHARPEN_STRENGTH = details / -10.0
-
-        global LATENT_CACHE
-        LATENT_CACHE = None
 
         return (latent,)
