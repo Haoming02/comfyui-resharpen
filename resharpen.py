@@ -1,8 +1,9 @@
 from functools import wraps
 from typing import Callable
-import latent_preview
+
 import torch
 
+import latent_preview
 
 ORIGINAL_PREP: Callable = latent_preview.prepare_callback
 
