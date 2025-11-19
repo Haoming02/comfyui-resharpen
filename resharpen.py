@@ -5,51 +5,41 @@ import torch
 
 import latent_preview
 
-ORIGINAL_PREP: Callable = latent_preview.prepare_callback
-
 RESHARPEN_STRENGTH: float = 0.0
 LATENT_CACHE: torch.Tensor = None
 
 
 def disable_resharpen():
-    """Reset the ReSharpen Strength"""
     global RESHARPEN_STRENGTH
     RESHARPEN_STRENGTH = 0.0
 
 
-def hijack(PREP) -> Callable:
+_prepare_callback: Callable = latent_preview.prepare_callback
 
-    @wraps(PREP)
-    def prep_callback(*args, **kwargs):
-        global LATENT_CACHE
-        LATENT_CACHE = None
 
-        original_callback: Callable = PREP(*args, **kwargs)
+@wraps(_prepare_callback)
+def hijack_prepare(*args, **kwargs):
+    original_callback: Callable = _prepare_callback(*args, **kwargs)
+
+    @torch.inference_mode()
+    @wraps(original_callback)
+    def hijack_callback(step, x0, x, total_steps):
+        original_callback(step, x0, x, total_steps)
+
         if not RESHARPEN_STRENGTH:
-            return original_callback
+            return
 
-        print("[ReSharpen] Enabled~")
+        global LATENT_CACHE
+        if LATENT_CACHE is not None:
+            delta = x - LATENT_CACHE
+            x += delta * RESHARPEN_STRENGTH
 
-        @torch.inference_mode()
-        @wraps(original_callback)
-        def hijack_callback(step, x0, x, total_steps):
-            if not RESHARPEN_STRENGTH:
-                return original_callback(step, x0, x, total_steps)
+        LATENT_CACHE = x.detach().clone()
 
-            global LATENT_CACHE
-            if LATENT_CACHE is not None:
-                delta = x.detach().clone() - LATENT_CACHE
-                x += delta * RESHARPEN_STRENGTH
-
-            LATENT_CACHE = x.detach().clone()
-            return original_callback(step, x0, x, total_steps)
-
-        return hijack_callback
-
-    return prep_callback
+    return hijack_callback
 
 
-latent_preview.prepare_callback = hijack(ORIGINAL_PREP)
+latent_preview.prepare_callback = hijack_prepare
 
 
 class ReSharpen:
@@ -67,11 +57,9 @@ class ReSharpen:
 
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "hook"
-    CATEGORY = "latent"
+    CATEGORY = "sampling"
 
     def hook(self, latent, details: float):
-
         global RESHARPEN_STRENGTH
         RESHARPEN_STRENGTH = details / -10.0
-
         return (latent,)

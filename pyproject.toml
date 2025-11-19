@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-resharpen"
 description = "Manipulate the details of generations"
-version = "1.3.0"
+version = "1.4.0"
 license = { text = "MIT License" }
 dependencies = []
 

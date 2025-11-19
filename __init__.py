@@ -1,20 +1,18 @@
 from functools import wraps
-from typing import Callable
 
 import execution
 
 from .resharpen import ReSharpen, disable_resharpen
 
-NODE_CLASS_MAPPINGS = {"Resharpen": ReSharpen}
-NODE_DISPLAY_NAME_MAPPINGS = {"Resharpen": "ReSharpen"}
+NODE_CLASS_MAPPINGS = {"ReSharpen": ReSharpen}
+NODE_DISPLAY_NAME_MAPPINGS = {"ReSharpen": "ReSharpen"}
 
 
 def find_node(prompt: dict) -> bool:
-    """Find any ReSharpen Node"""
-    return any(v.get("class_type") == "Resharpen" for v in prompt.values())
+    return any(node.get("class_type", None) == "ReSharpen" for node in prompt.values())
 
 
-original_validate: Callable = execution.validate_prompt
+original_validate = execution.validate_prompt
 
 
 @wraps(original_validate)
