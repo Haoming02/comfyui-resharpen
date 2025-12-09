@@ -14,6 +14,11 @@ def disable_resharpen():
     RESHARPEN_STRENGTH = 0.0
 
 
+def reset_cache():
+    global LATENT_CACHE
+    LATENT_CACHE = None
+
+
 _prepare_callback: Callable = latent_preview.prepare_callback
 
 
@@ -30,11 +35,13 @@ def hijack_prepare(*args, **kwargs):
             return
 
         global LATENT_CACHE
-        if LATENT_CACHE is not None:
-            delta = x - LATENT_CACHE
-            x += delta * RESHARPEN_STRENGTH
 
-        LATENT_CACHE = x.detach().clone()
+        if LATENT_CACHE is None:
+            LATENT_CACHE = x.detach().clone()
+        else:
+            delta = x - LATENT_CACHE
+            LATENT_CACHE = x.detach().clone()
+            x += delta * RESHARPEN_STRENGTH
 
     return hijack_callback
 

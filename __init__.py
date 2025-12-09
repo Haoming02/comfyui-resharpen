@@ -2,7 +2,7 @@ from functools import wraps
 
 import execution
 
-from .resharpen import ReSharpen, disable_resharpen
+from .resharpen import ReSharpen, disable_resharpen, reset_cache
 
 NODE_CLASS_MAPPINGS = {"ReSharpen": ReSharpen}
 NODE_DISPLAY_NAME_MAPPINGS = {"ReSharpen": "ReSharpen"}
@@ -24,6 +24,8 @@ async def hijack_validate(*args):
 
     if not find_node(prompt):
         disable_resharpen()
+    else:
+        reset_cache()
 
     return await original_validate(*args)
 
